@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:provider/provider.dart'; // Memanggil paket provider
+import 'providers/lesson_plan_provider.dart'; // Memanggil file provider buatan kita
 
 void main() async {
   // Baris ini wajib ditambahkan jika fungsi main() menggunakan async
@@ -20,17 +22,23 @@ class EduSparkApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'EduSpark',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
-      // Layar sementara sebelum kita merancang UI di folder screens
-      home: const Scaffold(
-        body: Center(
-          child: Text('Koneksi Supabase Berhasil Siap!'),
+    // Membungkus aplikasi dengan MultiProvider agar data bisa diakses di semua layar
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => LessonPlanProvider()),
+      ],
+      child: MaterialApp(
+        title: 'EduSpark',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          useMaterial3: true,
+        ),
+        // Layar sementara sebelum kita merancang UI di folder screens
+        home: const Scaffold(
+          body: Center(
+            child: Text('Koneksi Supabase & Provider Berhasil!'),
+          ),
         ),
       ),
     );
