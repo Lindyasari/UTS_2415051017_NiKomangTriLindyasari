@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart'; // Memanggil paket provider
 import 'providers/lesson_plan_provider.dart'; // Memanggil file provider buatan kita
-import 'screens/home_screen.dart';
+import 'screens/main_navigation.dart';
 
 void main() async {
   // Baris ini wajib ditambahkan jika fungsi main() menggunakan async
@@ -32,11 +32,12 @@ class EduSparkApp extends StatelessWidget {
         title: 'EduSpark',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          // Mengubah warna dasar aplikasi menjadi ungu ala LearnIO
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6C63FF)),
           useMaterial3: true,
         ),
         // Layar sementara sebelum kita merancang UI di folder screens
-        home: HomeScreen(
+        home: const MainNavigation(
         ),
       ),
     );
