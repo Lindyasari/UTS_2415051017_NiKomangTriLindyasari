@@ -2,10 +2,8 @@ import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DatabaseService {
-  // Memanggil koneksi Supabase yang sudah kita buka di main.dart
   final supabase = Supabase.instance.client;
 
-  // 1. CREATE (Menambah data baru)
   Future<void> addLessonPlan(String title, String description, String category) async {
     await supabase.from('lesson_plans').insert({
       'title': title,
@@ -14,13 +12,12 @@ class DatabaseService {
     });
   }
 
-  // 2. READ (Mengambil semua data untuk ditampilkan)
-  Future<List>> fetchLessonPlans() async {
+  // Spasi dilebarkan agar aman saat di-copy paste
+  Future < List < Map < String, dynamic > > > fetchLessonPlans() async {
     final data = await supabase.from('lesson_plans').select();
     return data;
   }
 
-  // 3. UPDATE (Mengubah data yang sudah ada)
   Future<void> updateLessonPlan(int id, String title, String description, String category) async {
     await supabase.from('lesson_plans').update({
       'title': title,
@@ -29,7 +26,6 @@ class DatabaseService {
     }).eq('id', id);
   }
 
-  // 4. DELETE (Menghapus data)
   Future<void> deleteLessonPlan(int id) async {
     await supabase.from('lesson_plans').delete().eq('id', id);
   }
