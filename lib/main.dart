@@ -8,6 +8,7 @@ void main() async {
   // Membuka jembatan koneksi ke database EduSpark
   await Supabase.initialize(
     url: 'https://darubdqdmwiivzfvmdtb.supabase.co',
+    // ignore: deprecated_member_use
     anonKey: 'sb_publishable_oPoNPVlu77HdaEHGzF468A_NEv2MBL7',
   );
 
