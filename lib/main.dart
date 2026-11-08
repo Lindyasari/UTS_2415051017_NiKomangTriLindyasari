@@ -1,6 +1,11 @@
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'screens/home_screen.dart';
+import 'services/book_api_service.dart';
+import 'repositories/book_repository.dart';
+import 'providers/book_provider.dart';
 
 void main() {
   runApp(const BacaYukApp());
@@ -11,18 +16,29 @@ class BacaYukApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'BacaYuk',
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF8F7F3),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF477A65),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => BookProvider(
+            repository: BookRepository(
+              apiService: BookApiService(),
+            ),
+          ),
         ),
-        fontFamily: 'Roboto',
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'BacaYuk',
+        theme: ThemeData(
+          useMaterial3: true,
+          scaffoldBackgroundColor: const Color(0xFFF8F7F3),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF477A65),
+          ),
+          fontFamily: 'Roboto',
+        ),
+        home: const HomeScreen(),
       ),
-      home: const HomeScreen(),
     );
   }
 }

@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import '../widgets/home_content.dart';
+import 'catalog_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,7 +15,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> pages = const [
     HomeContent(),
-    Center(child: Text('Halaman Katalog')),
+    CatalogScreen(),
     Center(child: Text('Halaman Koleksi')),
     Center(child: Text('Halaman Profil')),
   ];
