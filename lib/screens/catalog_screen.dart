@@ -25,7 +25,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      context.read<BookProvider>().fetchBooks();
+      final provider = context.read<BookProvider>();
+
+      if (provider.books.isEmpty &&
+          !provider.isLoading &&
+          provider.errorMessage == null) {
+        provider.fetchBooks();
+      }
     });
   }
 
@@ -211,7 +217,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                                   const SizedBox(height: 15),
                                   ElevatedButton.icon(
                                     onPressed: () {
-                                      provider.fetchBooks();
+                                       provider.fetchBooks(forceRefresh: true);
                                     },
                                     icon: const Icon(Icons.refresh),
                                     label: const Text('Coba Lagi'),

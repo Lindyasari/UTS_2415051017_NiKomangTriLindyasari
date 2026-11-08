@@ -13,27 +13,33 @@ class BookProvider extends ChangeNotifier {
 
   List<Book> _books = [];
   bool _isLoading = false;
+  bool _hasFetched = false;
   String? _errorMessage;
 
-  // Maksimal buku yang ditampilkan
   static const int maxBooks = 30;
 
   List<Book> get books => _books;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  Future<void> fetchBooks() async {
+  Future<void> fetchBooks({bool forceRefresh = false}) async {
+    // Hindari permintaan API berulang
+    if (_isLoading) return;
+
+    // Gunakan data yang sudah tersimpan
+    if (_hasFetched && !forceRefresh) return;
+
     _isLoading = true;
     _errorMessage = null;
 
     notifyListeners();
 
     try {
-      // Mengambil data buku dari API
       final fetchedBooks = await repository.getBooks();
 
-      // Membatasi jumlah buku menjadi 30
       _books = fetchedBooks.take(maxBooks).toList();
+
+      _hasFetched = true;
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
