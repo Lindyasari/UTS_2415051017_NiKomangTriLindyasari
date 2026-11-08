@@ -1,13 +1,22 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'screens/home_screen.dart';
 import 'services/book_api_service.dart';
 import 'repositories/book_repository.dart';
 import 'providers/book_provider.dart';
+import 'utils/supabase_config.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+  url: SupabaseConfig.supabaseUrl,
+  publishableKey: SupabaseConfig.supabasePublishableKey,
+);
+
   runApp(const BacaYukApp());
 }
 
