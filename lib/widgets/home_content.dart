@@ -1,9 +1,29 @@
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/saved_book_provider.dart';
 import 'stat_card.dart';
 
-class HomeContent extends StatelessWidget {
+class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
+
+  @override
+  State<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Mengambil data koleksi saat halaman Home pertama kali dibuka.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      context.read<SavedBookProvider>().fetchSavedBooks();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +33,7 @@ class HomeContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // HEADER BACYAYUK
+              // HEADER BACAYUK
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -125,32 +145,63 @@ class HomeContent extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
 
-                        Row(
-                          children: const [
-                            Expanded(
-                              child: StatCard(
-                                icon: Icons.menu_book_rounded,
-                                title: 'Total Buku',
-                                value: '0',
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Expanded(
-                              child: StatCard(
-                                icon: Icons.auto_stories_rounded,
-                                title: 'Sedang Dibaca',
-                                value: '0',
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Expanded(
-                              child: StatCard(
-                                icon: Icons.check_circle_outline,
-                                title: 'Selesai Dibaca',
-                                value: '0',
-                              ),
-                            ),
-                          ],
+                        Consumer<SavedBookProvider>(
+                          builder: (context, provider, child) {
+                            final books = provider.savedBooks;
+
+                            final totalBooks = books.length;
+
+                            final currentlyReading = books
+                                .where(
+                                  (book) =>
+                                      book.readingStatus == 'Sedang Dibaca',
+                                )
+                                .length;
+
+                            final finishedBooks = books
+                                .where(
+                                  (book) =>
+                                      book.readingStatus == 'Selesai Dibaca',
+                                )
+                                .length;
+
+                            final loading = provider.isLoading &&
+                                books.isEmpty;
+
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: StatCard(
+                                    icon: Icons.menu_book_rounded,
+                                    title: 'Total Koleksi',
+                                    value: loading
+                                        ? '...'
+                                        : totalBooks.toString(),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: StatCard(
+                                    icon: Icons.auto_stories_rounded,
+                                    title: 'Sedang Dibaca',
+                                    value: loading
+                                        ? '...'
+                                        : currentlyReading.toString(),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: StatCard(
+                                    icon: Icons.check_circle_outline,
+                                    title: 'Selesai Dibaca',
+                                    value: loading
+                                        ? '...'
+                                        : finishedBooks.toString(),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
 
                         const SizedBox(height: 28),
@@ -165,39 +216,175 @@ class HomeContent extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
 
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.menu_book_outlined,
-                                size: 42,
-                                color: Colors.grey.shade400,
-                              ),
-                              const SizedBox(height: 10),
-                              const Text(
-                                'Belum Ada Buku',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
+                        Consumer<SavedBookProvider>(
+                          builder: (context, provider, child) {
+                            final readingBooks = provider.savedBooks
+                                .where(
+                                  (book) =>
+                                      book.readingStatus == 'Sedang Dibaca',
+                                )
+                                .toList();
+
+                            if (provider.isLoading &&
+                                provider.savedBooks.isEmpty) {
+                              return Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
-                              ),
-                              const SizedBox(height: 5),
-                              const Text(
-                                'Buku yang sedang kamu baca akan muncul di sini.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.black54,
+                                child: const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Color(0xFF477A65),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                              );
+                            }
+
+                            if (provider.errorMessage != null &&
+                                provider.savedBooks.isEmpty) {
+                              return Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  children: [
+                                    const Icon(
+                                      Icons.cloud_off_outlined,
+                                      size: 38,
+                                      color: Colors.grey,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const Text(
+                                      'Gagal Memuat Koleksi',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    TextButton(
+                                      onPressed: () {
+                                        provider.fetchSavedBooks();
+                                      },
+                                      child: const Text('Coba Lagi'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+
+                            if (readingBooks.isEmpty) {
+                              return Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.menu_book_outlined,
+                                      size: 42,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    const Text(
+                                      'Belum Ada Buku',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    const Text(
+                                      'Buku yang berstatus Sedang Dibaca akan muncul di sini.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+
+                            return Column(
+                              children: readingBooks.map((book) {
+                                return Container(
+                                  width: double.infinity,
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 48,
+                                        height: 58,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFE3EEE6),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: const Icon(
+                                          Icons.menu_book_rounded,
+                                          color: Color(0xFF477A65),
+                                          size: 27,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              book.title,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 5),
+                                            Text(
+                                              book.author?.isNotEmpty == true
+                                                  ? book.author!
+                                                  : 'Penulis tidak diketahui',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.black54,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 7),
+                                            const Text(
+                                              'Sedang Dibaca',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Color(0xFF477A65),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            );
+                          },
                         ),
 
                         const SizedBox(height: 24),
@@ -237,7 +424,7 @@ class HomeContent extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              Icon(
+                              const Icon(
                                 Icons.auto_stories_rounded,
                                 size: 42,
                                 color: Color(0xFF477A65),
