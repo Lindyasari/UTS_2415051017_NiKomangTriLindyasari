@@ -29,6 +29,87 @@ class _CollectionScreenState extends State<CollectionScreen> {
     await context.read<SavedBookProvider>().fetchSavedBooks();
   }
 
+  // KONFIRMASI HAPUS BUKU
+  Future<void> _confirmDelete(SavedBook book) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFF8F7F3),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          title: const Text(
+            'Hapus Buku?',
+            style: TextStyle(
+              color: Color(0xFF315C49),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            'Apakah kamu yakin ingin menghapus '
+            '"${book.title}" dari koleksi?',
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: const Text(
+                'Batal',
+                style: TextStyle(
+                  color: Color(0xFF477A65),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    await _deleteBook(book);
+  }
+
+  // PROSES HAPUS BUKU
+  Future<void> _deleteBook(SavedBook book) async {
+    if (book.id == null) return;
+
+    final provider = context.read<SavedBookProvider>();
+
+    final success = await provider.deleteSavedBook(book.id!);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Buku berhasil dihapus dari koleksi.'
+              : 'Gagal menghapus buku. Silakan coba lagi.',
+        ),
+        backgroundColor:
+            success ? const Color(0xFF477A65) : Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -144,8 +225,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
 
   // KARTU BUKU
   Widget _buildBookCard(SavedBook book) {
-    final hasNote = book.note != null &&
-        book.note!.trim().isNotEmpty;
+    final hasNote =
+        book.note != null && book.note!.trim().isNotEmpty;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -207,9 +288,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                           color: Color(0xFF315C49),
                         ),
                       ),
-
                       const SizedBox(height: 5),
-
                       Text(
                         book.author ?? 'Penulis tidak diketahui',
                         maxLines: 1,
@@ -219,7 +298,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                           color: Colors.black54,
                         ),
                       ),
-
                       const SizedBox(height: 10),
 
                       // STATUS BACA
@@ -241,7 +319,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 10),
 
                       // RATING
@@ -299,12 +376,25 @@ class _CollectionScreenState extends State<CollectionScreen> {
 
                 const SizedBox(width: 5),
 
-                const Padding(
-                  padding: EdgeInsets.only(top: 30),
-                  child: Icon(
-                    Icons.chevron_right_rounded,
-                    color: Color(0xFF477A65),
-                  ),
+                // TOMBOL HAPUS
+                Column(
+                  children: [
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFF477A65),
+                    ),
+                    const SizedBox(height: 12),
+                    IconButton(
+                      onPressed: () => _confirmDelete(book),
+                      icon: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: Colors.redAccent,
+                        size: 22,
+                      ),
+                      tooltip: 'Hapus buku',
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ],
                 ),
               ],
             ),
