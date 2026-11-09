@@ -242,7 +242,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 // DETAIL BUKU DARI KOLEKSI
 // =====================================================
 
-class SavedBookDetailScreen extends StatelessWidget {
+class SavedBookDetailScreen extends StatefulWidget {
   final SavedBook savedBook;
 
   const SavedBookDetailScreen({
@@ -251,7 +251,97 @@ class SavedBookDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<SavedBookDetailScreen> createState() =>
+      _SavedBookDetailScreenState();
+}
+
+class _SavedBookDetailScreenState
+    extends State<SavedBookDetailScreen> {
+  late String _selectedStatus;
+
+  bool _isSaving = false;
+
+  final List<String> _readingStatuses = [
+    'Belum Dibaca',
+    'Sedang Dibaca',
+    'Selesai Dibaca',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    _selectedStatus = widget.savedBook.readingStatus;
+  }
+
+  // Memperbarui status baca ke Supabase.
+  Future<void> _saveStatus() async {
+    if (_isSaving) return;
+
+    final bookId = widget.savedBook.id;
+
+    if (bookId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ID buku tidak ditemukan.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Tidak perlu menyimpan jika status tidak berubah.
+    if (_selectedStatus == widget.savedBook.readingStatus) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tidak ada perubahan status baca.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    final provider = context.read<SavedBookProvider>();
+
+    final success = await provider.updateSavedBook(
+      bookId,
+      {
+        'reading_status': _selectedStatus,
+      },
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _isSaving = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Status baca berhasil diperbarui!'
+              : 'Gagal memperbarui status baca. Silakan coba lagi.',
+        ),
+        backgroundColor: success
+            ? const Color(0xFF477A65)
+            : Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final book = widget.savedBook;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F7F3),
       appBar: AppBar(
@@ -294,7 +384,7 @@ class SavedBookDetailScreen extends StatelessWidget {
 
             // JUDUL BUKU
             Text(
-              savedBook.title,
+              book.title,
               style: const TextStyle(
                 fontSize: 23,
                 fontWeight: FontWeight.bold,
@@ -306,7 +396,7 @@ class SavedBookDetailScreen extends StatelessWidget {
 
             // PENULIS
             Text(
-              'Oleh ${savedBook.author ?? 'Penulis tidak diketahui'}',
+              'Oleh ${book.author ?? 'Penulis tidak diketahui'}',
               style: const TextStyle(
                 fontSize: 14,
                 color: Colors.black54,
@@ -327,24 +417,108 @@ class SavedBookDetailScreen extends StatelessWidget {
 
             _infoItem(
               'Status Baca',
-              savedBook.readingStatus,
+              _selectedStatus,
             ),
+
             _infoItem(
               'Rating',
-              savedBook.rating == null
+              book.rating == null
                   ? 'Belum diberi rating'
-                  : '${savedBook.rating}/5',
+                  : '${book.rating}/5',
             ),
+
             _infoItem(
               'Catatan',
-              savedBook.note?.isNotEmpty == true
-                  ? savedBook.note!
+              book.note?.isNotEmpty == true
+                  ? book.note!
                   : 'Belum ada catatan',
+            ),
+
+            const SizedBox(height: 24),
+
+            // PILIH STATUS BACA
+            const Text(
+              'Ubah Status Baca',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF315C49),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            DropdownButtonFormField<String>(
+              initialValue: _selectedStatus,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFE0E5DF),
+                  ),
+                ),
+              ),
+              items: _readingStatuses.map((status) {
+                return DropdownMenuItem<String>(
+                  value: status,
+                  child: Text(status),
+                );
+              }).toList(),
+              onChanged: _isSaving
+                  ? null
+                  : (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedStatus = value;
+                        });
+                      }
+                    },
+            ),
+
+            const SizedBox(height: 18),
+
+            // TOMBOL SIMPAN
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _isSaving ? null : _saveStatus,
+                icon: _isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.save_rounded),
+                label: Text(
+                  _isSaving
+                      ? 'Menyimpan...'
+                      : 'Simpan Perubahan',
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF477A65),
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor:
+                      const Color(0xFF477A65).withValues(alpha: 0.7),
+                  disabledForegroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
             ),
 
             const SizedBox(height: 20),
 
-            // IDENTITAS BUKU
+            // INFORMASI KOLEKSI
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(14),
