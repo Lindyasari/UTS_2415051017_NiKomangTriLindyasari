@@ -6,6 +6,10 @@ import '../models/book_model.dart';
 import '../models/saved_book_model.dart';
 import '../providers/saved_book_provider.dart';
 
+// =====================================================
+// DETAIL BUKU DARI KATALOG
+// =====================================================
+
 class BookDetailScreen extends StatefulWidget {
   final Book book;
 
@@ -99,7 +103,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // COVER BUKU
             Center(
               child: Container(
                 width: 180,
@@ -118,7 +121,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
             const SizedBox(height: 24),
 
-            // JUDUL BUKU
             Text(
               book.title,
               style: const TextStyle(
@@ -130,7 +132,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
             const SizedBox(height: 8),
 
-            // PENULIS
             Text(
               'Oleh ${book.authorText}',
               style: const TextStyle(
@@ -141,7 +142,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
             const SizedBox(height: 24),
 
-            // INFORMASI BUKU
             const Text(
               'Informasi Buku',
               style: TextStyle(
@@ -168,7 +168,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
             const SizedBox(height: 24),
 
-            // TOMBOL TAMBAH KE KOLEKSI
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -207,7 +206,166 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     );
   }
 
-  // Widget untuk menampilkan informasi buku.
+  Widget _infoItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 13),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 105,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.black54,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          const Text(': '),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =====================================================
+// DETAIL BUKU DARI KOLEKSI
+// =====================================================
+
+class SavedBookDetailScreen extends StatelessWidget {
+  final SavedBook savedBook;
+
+  const SavedBookDetailScreen({
+    super.key,
+    required this.savedBook,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F7F3),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF8F7F3),
+        elevation: 0,
+        title: const Text(
+          'Detail Buku',
+          style: TextStyle(
+            color: Color(0xFF315C49),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: const IconThemeData(
+          color: Color(0xFF315C49),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // COVER BUKU
+            Center(
+              child: Container(
+                width: 180,
+                height: 230,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE3EEE6),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.menu_book_rounded,
+                  size: 85,
+                  color: Color(0xFF477A65),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // JUDUL BUKU
+            Text(
+              savedBook.title,
+              style: const TextStyle(
+                fontSize: 23,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF315C49),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // PENULIS
+            Text(
+              'Oleh ${savedBook.author ?? 'Penulis tidak diketahui'}',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black54,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            const Text(
+              'Informasi Buku',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            _infoItem(
+              'Status Baca',
+              savedBook.readingStatus,
+            ),
+            _infoItem(
+              'Rating',
+              savedBook.rating == null
+                  ? 'Belum diberi rating'
+                  : '${savedBook.rating}/5',
+            ),
+            _infoItem(
+              'Catatan',
+              savedBook.note?.isNotEmpty == true
+                  ? savedBook.note!
+                  : 'Belum ada catatan',
+            ),
+
+            const SizedBox(height: 20),
+
+            // IDENTITAS BUKU
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE3EEE6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'Buku ini tersimpan di koleksi pribadimu.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF315C49),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _infoItem(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 13),
