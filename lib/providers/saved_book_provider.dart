@@ -28,9 +28,11 @@ class SavedBookProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _savedBooks = await repository.getSavedBooks();
+      final books = await repository.getSavedBooks();
+      _savedBooks = books;
     } catch (e) {
       _errorMessage = e.toString();
+      debugPrint('Error fetchSavedBooks: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -45,6 +47,7 @@ class SavedBookProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
+      debugPrint('Error addSavedBook: $e');
       notifyListeners();
       return false;
     }
@@ -61,6 +64,7 @@ class SavedBookProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
+      debugPrint('Error updateSavedBook: $e');
       notifyListeners();
       return false;
     }
@@ -74,6 +78,7 @@ class SavedBookProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = e.toString();
+      debugPrint('Error deleteSavedBook: $e');
       notifyListeners();
       return false;
     }

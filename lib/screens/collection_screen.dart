@@ -14,6 +14,15 @@ class CollectionScreen extends StatefulWidget {
 }
 
 class _CollectionScreenState extends State<CollectionScreen> {
+  String _selectedFilter = 'Semua';
+
+  final List<String> _filters = [
+    'Semua',
+    'Belum Dibaca',
+    'Sedang Dibaca',
+    'Selesai Dibaca',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -27,6 +36,17 @@ class _CollectionScreenState extends State<CollectionScreen> {
 
   Future<void> _refreshCollection() async {
     await context.read<SavedBookProvider>().fetchSavedBooks();
+  }
+
+  // FILTER BUKU BERDASARKAN STATUS
+  List<SavedBook> _getFilteredBooks(List<SavedBook> books) {
+    if (_selectedFilter == 'Semua') {
+      return books;
+    }
+
+    return books
+        .where((book) => book.readingStatus == _selectedFilter)
+        .toList();
   }
 
   // KONFIRMASI HAPUS BUKU
@@ -154,6 +174,9 @@ class _CollectionScreenState extends State<CollectionScreen> {
             return _buildEmptyState();
           }
 
+          final filteredBooks =
+              _getFilteredBooks(provider.savedBooks);
+
           return RefreshIndicator(
             onRefresh: _refreshCollection,
             color: const Color(0xFF477A65),
@@ -161,14 +184,78 @@ class _CollectionScreenState extends State<CollectionScreen> {
               padding: const EdgeInsets.all(20),
               children: [
                 _buildCollectionHeader(provider.savedBooks.length),
-                const SizedBox(height: 20),
-                ...provider.savedBooks.map(
-                  (book) => _buildBookCard(book),
+                const SizedBox(height: 18),
+
+                // FILTER STATUS BACA
+                _buildFilter(),
+
+                const SizedBox(height: 16),
+
+                // JUMLAH BUKU SESUAI FILTER
+                Text(
+                  '${filteredBooks.length} buku ditemukan',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF315C49),
+                  ),
                 ),
+
+                const SizedBox(height: 14),
+
+                if (filteredBooks.isEmpty)
+                  _buildFilterEmptyState()
+                else
+                  ...filteredBooks.map(
+                    (book) => _buildBookCard(book),
+                  ),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  // FILTER STATUS BACA
+  Widget _buildFilter() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: _filters.map((filter) {
+          final isSelected = _selectedFilter == filter;
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(filter),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  _selectedFilter = filter;
+                });
+              },
+              selectedColor: const Color(0xFF477A65),
+              backgroundColor: Colors.white,
+              labelStyle: TextStyle(
+                color: isSelected
+                    ? Colors.white
+                    : const Color(0xFF315C49),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+              side: BorderSide(
+                color: isSelected
+                    ? const Color(0xFF477A65)
+                    : const Color(0xFFE0E5DF),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              showCheckmark: false,
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -404,7 +491,44 @@ class _CollectionScreenState extends State<CollectionScreen> {
     );
   }
 
-  // EMPTY STATE
+  // EMPTY STATE JIKA FILTER TIDAK MENEMUKAN BUKU
+  Widget _buildFilterEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 45,
+      ),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.filter_list_off_rounded,
+            size: 48,
+            color: Color(0xFF9AA99F),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Tidak Ada Buku',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF315C49),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Belum ada buku dengan status "$_selectedFilter".',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black54,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // EMPTY STATE KOLEKSI
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
