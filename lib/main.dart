@@ -11,6 +11,10 @@ import 'providers/book_provider.dart';
 import 'providers/saved_book_provider.dart';
 import 'utils/supabase_config.dart';
 
+// Import PDF
+import 'pdf/repositories/pdf_library_repository.dart';
+import 'pdf/providers/pdf_library_provider.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -51,6 +55,13 @@ class BacaYukApp extends StatelessWidget {
             repository: SavedBookRepository(
               supabase: Supabase.instance.client,
             ),
+          ),
+        ),
+
+        // Provider untuk perpustakaan PDF.
+        ChangeNotifierProvider(
+          create: (_) => PdfLibraryProvider(
+            repository: PdfLibraryRepository(),
           ),
         ),
       ],
