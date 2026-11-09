@@ -13,9 +13,16 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
-  url: SupabaseConfig.supabaseUrl,
-  publishableKey: SupabaseConfig.supabasePublishableKey,
-);
+    url: SupabaseConfig.supabaseUrl,
+    publishableKey: SupabaseConfig.supabasePublishableKey,
+  );
+
+  // Membuat sesi pengguna anonim jika belum ada sesi.
+  final supabase = Supabase.instance.client;
+
+  if (supabase.auth.currentUser == null) {
+    await supabase.auth.signInAnonymously();
+  }
 
   runApp(const BacaYukApp());
 }
