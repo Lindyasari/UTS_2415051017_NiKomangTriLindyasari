@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../widgets/home_content.dart';
 import 'catalog_screen.dart';
 import 'collection_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
     HomeContent(),
     CatalogScreen(),
     CollectionScreen(),
-    Center(child: Text('Halaman Profil')),
+    ProfileScreen(),
   ];
 
   @override
