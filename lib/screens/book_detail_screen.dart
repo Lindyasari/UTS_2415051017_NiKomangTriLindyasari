@@ -25,7 +25,6 @@ class BookDetailScreen extends StatefulWidget {
 class _BookDetailScreenState extends State<BookDetailScreen> {
   bool _isAdding = false;
 
-  // Menambahkan buku ke koleksi pengguna.
   Future<void> _addToCollection() async {
     if (_isAdding) return;
 
@@ -258,6 +257,13 @@ class SavedBookDetailScreen extends StatefulWidget {
 class _SavedBookDetailScreenState
     extends State<SavedBookDetailScreen> {
   late String _selectedStatus;
+  late TextEditingController _noteController;
+
+  late String _originalStatus;
+  late int? _originalRating;
+  late String _originalNote;
+
+  int? _selectedRating;
 
   bool _isSaving = false;
 
@@ -271,32 +277,51 @@ class _SavedBookDetailScreenState
   void initState() {
     super.initState();
 
-    _selectedStatus = widget.savedBook.readingStatus;
+    final book = widget.savedBook;
+
+    _selectedStatus = book.readingStatus;
+    _selectedRating = book.rating;
+
+    _noteController = TextEditingController(
+      text: book.note ?? '',
+    );
+
+    _originalStatus = book.readingStatus;
+    _originalRating = book.rating;
+    _originalNote = book.note ?? '';
   }
 
-  // Memperbarui status baca ke Supabase.
-  Future<void> _saveStatus() async {
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  // Menyimpan status, rating, dan catatan ke Supabase.
+  Future<void> _saveDetails() async {
     if (_isSaving) return;
 
     final bookId = widget.savedBook.id;
 
     if (bookId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('ID buku tidak ditemukan.'),
-          backgroundColor: Colors.red,
-        ),
+      _showMessage(
+        'ID buku tidak ditemukan.',
+        Colors.red.shade700,
       );
       return;
     }
 
-    // Tidak perlu menyimpan jika status tidak berubah.
-    if (_selectedStatus == widget.savedBook.readingStatus) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Tidak ada perubahan status baca.'),
-          backgroundColor: Colors.orange,
-        ),
+    final currentNote = _noteController.text.trim();
+
+    final hasChanges =
+        _selectedStatus != _originalStatus ||
+        _selectedRating != _originalRating ||
+        currentNote != _originalNote;
+
+    if (!hasChanges) {
+      _showMessage(
+        'Belum ada perubahan yang perlu disimpan.',
+        Colors.orange.shade700,
       );
       return;
     }
@@ -311,6 +336,8 @@ class _SavedBookDetailScreenState
       bookId,
       {
         'reading_status': _selectedStatus,
+        'rating': _selectedRating,
+        'note': currentNote.isEmpty ? null : currentNote,
       },
     );
 
@@ -318,18 +345,27 @@ class _SavedBookDetailScreenState
 
     setState(() {
       _isSaving = false;
+
+      if (success) {
+        _originalStatus = _selectedStatus;
+        _originalRating = _selectedRating;
+        _originalNote = currentNote;
+      }
     });
 
+    _showMessage(
+      success
+          ? 'Detail buku berhasil diperbarui!'
+          : 'Gagal menyimpan perubahan. Silakan coba lagi.',
+      success ? const Color(0xFF477A65) : Colors.red.shade700,
+    );
+  }
+
+  void _showMessage(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          success
-              ? 'Status baca berhasil diperbarui!'
-              : 'Gagal memperbarui status baca. Silakan coba lagi.',
-        ),
-        backgroundColor: success
-            ? const Color(0xFF477A65)
-            : Colors.red.shade700,
+        content: Text(message),
+        backgroundColor: color,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -382,7 +418,7 @@ class _SavedBookDetailScreenState
 
             const SizedBox(height: 24),
 
-            // JUDUL BUKU
+            // JUDUL DAN PENULIS
             Text(
               book.title,
               style: const TextStyle(
@@ -394,7 +430,6 @@ class _SavedBookDetailScreenState
 
             const SizedBox(height: 8),
 
-            // PENULIS
             Text(
               'Oleh ${book.author ?? 'Penulis tidak diketahui'}',
               style: const TextStyle(
@@ -415,28 +450,25 @@ class _SavedBookDetailScreenState
 
             const SizedBox(height: 14),
 
-            _infoItem(
-              'Status Baca',
-              _selectedStatus,
-            ),
+            _infoItem('Status Baca', _selectedStatus),
 
             _infoItem(
               'Rating',
-              book.rating == null
+              _selectedRating == null
                   ? 'Belum diberi rating'
-                  : '${book.rating}/5',
+                  : '$_selectedRating/5',
             ),
 
             _infoItem(
               'Catatan',
-              book.note?.isNotEmpty == true
-                  ? book.note!
-                  : 'Belum ada catatan',
+              _noteController.text.trim().isEmpty
+                  ? 'Belum ada catatan'
+                  : _noteController.text.trim(),
             ),
 
             const SizedBox(height: 24),
 
-            // PILIH STATUS BACA
+            // UBAH STATUS BACA
             const Text(
               'Ubah Status Baca',
               style: TextStyle(
@@ -480,13 +512,149 @@ class _SavedBookDetailScreenState
                     },
             ),
 
+            const SizedBox(height: 24),
+
+            // RATING BUKU
+            const Text(
+              'Berikan Rating Buku',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF315C49),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            const Text(
+              'Bagaimana pendapatmu tentang buku ini?',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.black54,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            Row(
+              children: List.generate(5, (index) {
+                final ratingValue = index + 1;
+                final isSelected =
+                    _selectedRating != null &&
+                    ratingValue <= _selectedRating!;
+
+                return IconButton(
+                  onPressed: _isSaving
+                      ? null
+                      : () {
+                          setState(() {
+                            _selectedRating = ratingValue;
+                          });
+                        },
+                  icon: Icon(
+                    isSelected ? Icons.star_rounded : Icons.star_outline_rounded,
+                    color: const Color(0xFFE5A72B),
+                    size: 34,
+                  ),
+                  tooltip: '$ratingValue bintang',
+                );
+              }),
+            ),
+
+            if (_selectedRating != null)
+              Row(
+                children: [
+                  Text(
+                    '$_selectedRating dari 5 bintang',
+                    style: const TextStyle(
+                      color: Color(0xFF477A65),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  TextButton(
+                    onPressed: _isSaving
+                        ? null
+                        : () {
+                            setState(() {
+                              _selectedRating = null;
+                            });
+                          },
+                    child: const Text(
+                      'Hapus rating',
+                      style: TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+            const SizedBox(height: 24),
+
+            // CATATAN PRIBADI
+            const Text(
+              'Catatan Pribadi',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF315C49),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            const Text(
+              'Tuliskan kesan atau hal menarik dari buku ini.',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.black54,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            TextField(
+              controller: _noteController,
+              enabled: !_isSaving,
+              maxLines: 4,
+              maxLength: 500,
+              onChanged: (_) {
+                setState(() {});
+              },
+              decoration: InputDecoration(
+                hintText: 'Tulis catatanmu di sini...',
+                filled: true,
+                fillColor: Colors.white,
+                alignLabelWithHint: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFE0E5DF),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF477A65),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+            ),
+
             const SizedBox(height: 18),
 
-            // TOMBOL SIMPAN
+            // TOMBOL SIMPAN SEMUA PERUBAHAN
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: _isSaving ? null : _saveStatus,
+                onPressed: _isSaving ? null : _saveDetails,
                 icon: _isSaving
                     ? const SizedBox(
                         width: 18,

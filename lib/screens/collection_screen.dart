@@ -18,7 +18,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
   void initState() {
     super.initState();
 
-    // Mengambil koleksi buku dari Supabase.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<SavedBookProvider>().fetchSavedBooks();
@@ -26,7 +25,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
     });
   }
 
-  // Memuat ulang koleksi.
   Future<void> _refreshCollection() async {
     await context.read<SavedBookProvider>().fetchSavedBooks();
   }
@@ -58,7 +56,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
       ),
       body: Consumer<SavedBookProvider>(
         builder: (context, provider, child) {
-          // Loading state.
           if (provider.isLoading && provider.savedBooks.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(
@@ -67,18 +64,15 @@ class _CollectionScreenState extends State<CollectionScreen> {
             );
           }
 
-          // Error state.
           if (provider.errorMessage != null &&
               provider.savedBooks.isEmpty) {
             return _buildErrorState(provider.errorMessage!);
           }
 
-          // Empty state.
           if (provider.savedBooks.isEmpty) {
             return _buildEmptyState();
           }
 
-          // Daftar buku.
           return RefreshIndicator(
             onRefresh: _refreshCollection,
             color: const Color(0xFF477A65),
@@ -87,7 +81,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
               children: [
                 _buildCollectionHeader(provider.savedBooks.length),
                 const SizedBox(height: 20),
-
                 ...provider.savedBooks.map(
                   (book) => _buildBookCard(book),
                 ),
@@ -99,7 +92,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
     );
   }
 
-  // Header koleksi.
+  // HEADER KOLEKSI
   Widget _buildCollectionHeader(int totalBooks) {
     return Container(
       width: double.infinity,
@@ -149,8 +142,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
     );
   }
 
-  // Kartu buku yang dapat diklik.
+  // KARTU BUKU
   Widget _buildBookCard(SavedBook book) {
+    final hasNote = book.note != null &&
+        book.note!.trim().isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       child: Material(
@@ -179,7 +175,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Cover buku.
+                // COVER BUKU
                 Container(
                   width: 65,
                   height: 85,
@@ -196,7 +192,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
 
                 const SizedBox(width: 14),
 
-                // Informasi buku.
+                // INFORMASI BUKU
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,7 +207,9 @@ class _CollectionScreenState extends State<CollectionScreen> {
                           color: Color(0xFF315C49),
                         ),
                       ),
+
                       const SizedBox(height: 5),
+
                       Text(
                         book.author ?? 'Penulis tidak diketahui',
                         maxLines: 1,
@@ -221,7 +219,10 @@ class _CollectionScreenState extends State<CollectionScreen> {
                           color: Colors.black54,
                         ),
                       ),
+
                       const SizedBox(height: 10),
+
+                      // STATUS BACA
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
@@ -240,13 +241,64 @@ class _CollectionScreenState extends State<CollectionScreen> {
                           ),
                         ),
                       ),
+
+                      const SizedBox(height: 10),
+
+                      // RATING
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.star_rounded,
+                            color: Color(0xFFE5A72B),
+                            size: 19,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            book.rating == null
+                                ? 'Belum diberi rating'
+                                : '${book.rating}/5',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF315C49),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // CATATAN
+                      if (hasNote) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.notes_rounded,
+                              size: 16,
+                              color: Color(0xFF477A65),
+                            ),
+                            const SizedBox(width: 5),
+                            Expanded(
+                              child: Text(
+                                book.note!.trim(),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.black54,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
 
                 const SizedBox(width: 5),
 
-                // Ikon untuk menandakan kartu dapat dibuka.
                 const Padding(
                   padding: EdgeInsets.only(top: 30),
                   child: Icon(
@@ -262,7 +314,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
     );
   }
 
-  // Tampilan ketika koleksi kosong.
+  // EMPTY STATE
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
@@ -308,7 +360,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
     );
   }
 
-  // Tampilan ketika terjadi kesalahan.
+  // ERROR STATE
   Widget _buildErrorState(String message) {
     return Center(
       child: Padding(
