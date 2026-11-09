@@ -6,7 +6,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/home_screen.dart';
 import 'services/book_api_service.dart';
 import 'repositories/book_repository.dart';
+import 'repositories/saved_book_repository.dart';
 import 'providers/book_provider.dart';
+import 'providers/saved_book_provider.dart';
 import 'utils/supabase_config.dart';
 
 Future<void> main() async {
@@ -34,10 +36,20 @@ class BacaYukApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // Provider untuk katalog buku dari REST API.
         ChangeNotifierProvider(
           create: (_) => BookProvider(
             repository: BookRepository(
               apiService: BookApiService(),
+            ),
+          ),
+        ),
+
+        // Provider untuk koleksi buku di Supabase.
+        ChangeNotifierProvider(
+          create: (_) => SavedBookProvider(
+            repository: SavedBookRepository(
+              supabase: Supabase.instance.client,
             ),
           ),
         ),

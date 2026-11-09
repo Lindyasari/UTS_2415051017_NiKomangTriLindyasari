@@ -26,21 +26,38 @@ class SavedBookRepository {
     }
   }
 
-  // Menambahkan buku ke koleksi.
+  // Menambahkan buku ke koleksi tanpa duplikasi.
   Future<void> addSavedBook(SavedBook book) async {
-    try {
-      final user = supabase.auth.currentUser;
+    final user = supabase.auth.currentUser;
 
-      if (user == null) {
-        throw Exception('Pengguna belum terautentikasi.');
+    if (user == null) {
+      throw Exception('Pengguna belum terautentikasi.');
+    }
+
+    try {
+      // Periksa apakah buku sudah tersimpan.
+      final existing = await supabase
+          .from('saved_books')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('book_key', book.bookKey)
+          .maybeSingle();
+
+      if (existing != null) {
+        throw Exception('Buku sudah ada di koleksi kamu.');
       }
 
       final data = book.toJson();
       data['user_id'] = user.id;
 
       await supabase.from('saved_books').insert(data);
+    } on PostgrestException catch (e) {
+      if (e.code == '23505') {
+        throw Exception('Buku sudah ada di koleksi kamu.');
+      }
+      throw Exception('Gagal menambahkan buku: ${e.message}');
     } catch (e) {
-      throw Exception('Gagal menambahkan buku: $e');
+      rethrow;
     }
   }
 
