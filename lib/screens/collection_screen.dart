@@ -7,14 +7,19 @@ import '../providers/saved_book_provider.dart';
 import 'book_detail_screen.dart';
 
 class CollectionScreen extends StatefulWidget {
-  const CollectionScreen({super.key});
+  final String initialFilter;
+
+  const CollectionScreen({
+    super.key,
+    this.initialFilter = 'Semua',
+  });
 
   @override
   State<CollectionScreen> createState() => _CollectionScreenState();
 }
 
 class _CollectionScreenState extends State<CollectionScreen> {
-  String _selectedFilter = 'Semua';
+  late String _selectedFilter;
 
   final List<String> _filters = [
     'Semua',
@@ -27,11 +32,26 @@ class _CollectionScreenState extends State<CollectionScreen> {
   void initState() {
     super.initState();
 
+    // Mengambil filter awal dari HomeScreen.
+    _selectedFilter = widget.initialFilter;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<SavedBookProvider>().fetchSavedBooks();
       }
     });
+  }
+
+  // Memperbarui filter ketika halaman menerima filter baru.
+  @override
+  void didUpdateWidget(covariant CollectionScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.initialFilter != widget.initialFilter) {
+      setState(() {
+        _selectedFilter = widget.initialFilter;
+      });
+    }
   }
 
   Future<void> _refreshCollection() async {
@@ -185,13 +205,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
               children: [
                 _buildCollectionHeader(provider.savedBooks.length),
                 const SizedBox(height: 18),
-
-                // FILTER STATUS BACA
                 _buildFilter(),
-
                 const SizedBox(height: 16),
-
-                // JUMLAH BUKU SESUAI FILTER
                 Text(
                   '${filteredBooks.length} buku ditemukan',
                   style: const TextStyle(
@@ -200,9 +215,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     color: Color(0xFF315C49),
                   ),
                 ),
-
                 const SizedBox(height: 14),
-
                 if (filteredBooks.isEmpty)
                   _buildFilterEmptyState()
                 else
@@ -343,7 +356,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // COVER BUKU
                 Container(
                   width: 65,
                   height: 85,
@@ -357,10 +369,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     color: Color(0xFF477A65),
                   ),
                 ),
-
                 const SizedBox(width: 14),
-
-                // INFORMASI BUKU
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,8 +395,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                         ),
                       ),
                       const SizedBox(height: 10),
-
-                      // STATUS BACA
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
@@ -407,8 +414,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                         ),
                       ),
                       const SizedBox(height: 10),
-
-                      // RATING
                       Row(
                         children: [
                           const Icon(
@@ -429,8 +434,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                           ),
                         ],
                       ),
-
-                      // CATATAN
                       if (hasNote) ...[
                         const SizedBox(height: 8),
                         Row(
@@ -460,10 +463,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(width: 5),
-
-                // TOMBOL HAPUS
                 Column(
                   children: [
                     const Icon(

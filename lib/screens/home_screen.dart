@@ -17,16 +17,29 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int selectedIndex = 0;
 
-  final List<Widget> pages = const [
-    HomeContent(),
-    CatalogScreen(),
-    CollectionScreen(),
-    PdfLibraryScreen(),
-    ProfileScreen(),
-  ];
+  String collectionFilter = 'Semua';
+
+  void _openCollection(String filter) {
+    setState(() {
+      collectionFilter = filter;
+      selectedIndex = 2;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      HomeContent(
+        onOpenCollection: _openCollection,
+      ),
+      const CatalogScreen(),
+      CollectionScreen(
+        initialFilter: collectionFilter,
+      ),
+      const PdfLibraryScreen(),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
       body: SafeArea(
         child: IndexedStack(
