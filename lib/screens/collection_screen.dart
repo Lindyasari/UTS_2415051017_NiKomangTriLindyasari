@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,10 +8,7 @@ import 'book_detail_screen.dart';
 class CollectionScreen extends StatefulWidget {
   final String initialFilter;
 
-  const CollectionScreen({
-    super.key,
-    this.initialFilter = 'Semua',
-  });
+  const CollectionScreen({super.key, this.initialFilter = 'Semua'});
 
   @override
   State<CollectionScreen> createState() => _CollectionScreenState();
@@ -89,10 +85,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
           content: Text(
             'Apakah kamu yakin ingin menghapus '
             '"${book.title}" dari koleksi?',
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
-            ),
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
           ),
           actions: [
             TextButton(
@@ -101,9 +94,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
               },
               child: const Text(
                 'Batal',
-                style: TextStyle(
-                  color: Color(0xFF477A65),
-                ),
+                style: TextStyle(color: Color(0xFF477A65)),
               ),
             ),
             ElevatedButton(
@@ -143,8 +134,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
               ? 'Buku berhasil dihapus dari koleksi.'
               : 'Gagal menghapus buku. Silakan coba lagi.',
         ),
-        backgroundColor:
-            success ? const Color(0xFF477A65) : Colors.redAccent,
+        backgroundColor: success ? const Color(0xFF477A65) : Colors.redAccent,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -167,10 +157,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
         actions: [
           IconButton(
             onPressed: _refreshCollection,
-            icon: const Icon(
-              Icons.refresh_rounded,
-              color: Color(0xFF477A65),
-            ),
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF477A65)),
             tooltip: 'Muat ulang koleksi',
           ),
         ],
@@ -179,14 +166,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
         builder: (context, provider, child) {
           if (provider.isLoading && provider.savedBooks.isEmpty) {
             return const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF477A65),
-              ),
+              child: CircularProgressIndicator(color: Color(0xFF477A65)),
             );
           }
 
-          if (provider.errorMessage != null &&
-              provider.savedBooks.isEmpty) {
+          if (provider.errorMessage != null && provider.savedBooks.isEmpty) {
             return _buildErrorState(provider.errorMessage!);
           }
 
@@ -194,8 +178,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
             return _buildEmptyState();
           }
 
-          final filteredBooks =
-              _getFilteredBooks(provider.savedBooks);
+          final filteredBooks = _getFilteredBooks(provider.savedBooks);
 
           return RefreshIndicator(
             onRefresh: _refreshCollection,
@@ -219,9 +202,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 if (filteredBooks.isEmpty)
                   _buildFilterEmptyState()
                 else
-                  ...filteredBooks.map(
-                    (book) => _buildBookCard(book),
-                  ),
+                  ...filteredBooks.map((book) => _buildBookCard(book)),
               ],
             ),
           );
@@ -251,9 +232,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
               selectedColor: const Color(0xFF477A65),
               backgroundColor: Colors.white,
               labelStyle: TextStyle(
-                color: isSelected
-                    ? Colors.white
-                    : const Color(0xFF315C49),
+                color: isSelected ? Colors.white : const Color(0xFF315C49),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -296,18 +275,12 @@ class _CollectionScreenState extends State<CollectionScreen> {
           const SizedBox(height: 6),
           const Text(
             'Semua buku yang kamu simpan ada di sini.',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.black54,
-            ),
+            style: TextStyle(fontSize: 13, color: Colors.black54),
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              const Icon(
-                Icons.menu_book_rounded,
-                color: Color(0xFF477A65),
-              ),
+              const Icon(Icons.menu_book_rounded, color: Color(0xFF477A65)),
               const SizedBox(width: 8),
               Text(
                 '$totalBooks buku tersimpan',
@@ -325,8 +298,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
 
   // KARTU BUKU
   Widget _buildBookCard(SavedBook book) {
-    final hasNote =
-        book.note != null && book.note!.trim().isNotEmpty;
+    final hasNote = book.note != null && book.note!.trim().isNotEmpty;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -339,9 +311,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => SavedBookDetailScreen(
-                  savedBook: book,
-                ),
+                builder: (context) => SavedBookDetailScreen(savedBook: book),
               ),
             );
           },
@@ -349,9 +319,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFFE8E8E2),
-              ),
+              border: Border.all(color: const Color(0xFFE8E8E2)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -363,11 +331,25 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     color: const Color(0xFFE3EEE6),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
-                    Icons.menu_book_rounded,
-                    size: 34,
-                    color: Color(0xFF477A65),
-                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child:
+                      book.coverUrl != null && book.coverUrl!.trim().isNotEmpty
+                      ? Image.network(
+                          book.coverUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.menu_book_rounded,
+                              size: 34,
+                              color: Color(0xFF477A65),
+                            );
+                          },
+                        )
+                      : const Icon(
+                          Icons.menu_book_rounded,
+                          size: 34,
+                          color: Color(0xFF477A65),
+                        ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -494,10 +476,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
   // EMPTY STATE JIKA FILTER TIDAK MENEMUKAN BUKU
   Widget _buildFilterEmptyState() {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 45,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 45),
       child: Column(
         children: [
           const Icon(
@@ -518,10 +497,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
           Text(
             'Belum ada buku dengan status "$_selectedFilter".',
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.black54,
-            ),
+            style: const TextStyle(fontSize: 12, color: Colors.black54),
           ),
         ],
       ),
@@ -563,10 +539,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
               'Yuk, jelajahi katalog dan tambahkan buku '
               'favoritmu ke koleksi!',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.black54,
-              ),
+              style: TextStyle(fontSize: 13, color: Colors.black54),
             ),
           ],
         ),
@@ -600,10 +573,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.black54,
-              ),
+              style: const TextStyle(fontSize: 12, color: Colors.black54),
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(

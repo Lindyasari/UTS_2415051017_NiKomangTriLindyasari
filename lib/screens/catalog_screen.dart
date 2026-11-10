@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -61,8 +60,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
               final crossAxisCount = screenWidth >= 900
                   ? 4
                   : screenWidth >= 600
-                      ? 3
-                      : 2;
+                  ? 3
+                  : 2;
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
@@ -85,10 +84,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
                         const Text(
                           'Temukan bacaan menarik untuk menemani harimu.',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.black54,
-                          ),
+                          style: TextStyle(fontSize: 13, color: Colors.black54),
                         ),
 
                         const SizedBox(height: 22),
@@ -182,14 +178,11 @@ class _CatalogScreenState extends State<CatalogScreen> {
                               ),
                             ),
                           )
-
                         // Error
                         else if (provider.errorMessage != null)
                           Center(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 45,
-                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 45),
                               child: Column(
                                 children: [
                                   const Icon(
@@ -217,13 +210,12 @@ class _CatalogScreenState extends State<CatalogScreen> {
                                   const SizedBox(height: 15),
                                   ElevatedButton.icon(
                                     onPressed: () {
-                                       provider.fetchBooks(forceRefresh: true);
+                                      provider.fetchBooks(forceRefresh: true);
                                     },
                                     icon: const Icon(Icons.refresh),
                                     label: const Text('Coba Lagi'),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          const Color(0xFF477A65),
+                                      backgroundColor: const Color(0xFF477A65),
                                       foregroundColor: Colors.white,
                                     ),
                                   ),
@@ -231,7 +223,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
                               ),
                             ),
                           )
-
                         // Data kosong
                         else if (provider.books.isEmpty)
                           const Center(
@@ -247,15 +238,12 @@ class _CatalogScreenState extends State<CatalogScreen> {
                                   SizedBox(height: 12),
                                   Text(
                                     'Belum ada buku tersedia.',
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                    ),
+                                    style: TextStyle(color: Colors.black54),
                                   ),
                                 ],
                               ),
                             ),
                           )
-
                         // Hasil pencarian kosong
                         else if (filteredBooks.isEmpty)
                           const Center(
@@ -271,15 +259,12 @@ class _CatalogScreenState extends State<CatalogScreen> {
                                   SizedBox(height: 12),
                                   Text(
                                     'Buku tidak ditemukan.',
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                    ),
+                                    style: TextStyle(color: Colors.black54),
                                   ),
                                 ],
                               ),
                             ),
                           )
-
                         // Grid Buku
                         else
                           GridView.builder(
@@ -288,11 +273,11 @@ class _CatalogScreenState extends State<CatalogScreen> {
                             itemCount: filteredBooks.length,
                             gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: crossAxisCount,
-                              crossAxisSpacing: 14,
-                              mainAxisSpacing: 14,
-                              childAspectRatio: 0.68,
-                            ),
+                                  crossAxisCount: crossAxisCount,
+                                  crossAxisSpacing: 14,
+                                  mainAxisSpacing: 14,
+                                  childAspectRatio: 0.68,
+                                ),
                             itemBuilder: (context, index) {
                               final book = filteredBooks[index];
 
@@ -328,11 +313,7 @@ class BookCard extends StatelessWidget {
   final Book book;
   final VoidCallback onTap;
 
-  const BookCard({
-    super.key,
-    required this.book,
-    required this.onTap,
-  });
+  const BookCard({super.key, required this.book, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -343,9 +324,7 @@ class BookCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.grey.shade100,
-          ),
+          border: Border.all(color: Colors.grey.shade100),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
@@ -367,11 +346,29 @@ class BookCard extends StatelessWidget {
                     color: const Color(0xFFE3EEE6),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
-                    Icons.menu_book_rounded,
-                    size: 48,
-                    color: Color(0xFF477A65),
-                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: book.coverUrl != null && book.coverUrl!.isNotEmpty
+                      ? Image.network(
+                          book.coverUrl!,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(
+                              child: Icon(
+                                Icons.menu_book_rounded,
+                                size: 48,
+                                color: Color(0xFF477A65),
+                              ),
+                            );
+                          },
+                        )
+                      : const Center(
+                          child: Icon(
+                            Icons.menu_book_rounded,
+                            size: 48,
+                            color: Color(0xFF477A65),
+                          ),
+                        ),
                 ),
               ),
 
@@ -396,20 +393,14 @@ class BookCard extends StatelessWidget {
                 book.authorText,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Colors.black54,
-                ),
+                style: const TextStyle(fontSize: 11, color: Colors.black54),
               ),
 
               const SizedBox(height: 8),
 
               // Kategori
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFE3EEE6),
                   borderRadius: BorderRadius.circular(20),
@@ -418,10 +409,7 @@ class BookCard extends StatelessWidget {
                   book.categoryText,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 9,
-                    color: Color(0xFF477A65),
-                  ),
+                  style: const TextStyle(fontSize: 9, color: Color(0xFF477A65)),
                 ),
               ),
             ],
