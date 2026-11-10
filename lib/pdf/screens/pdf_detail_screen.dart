@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,10 +8,7 @@ import 'pdf_reader_screen.dart';
 class PdfDetailScreen extends StatefulWidget {
   final PdfBook pdfBook;
 
-  const PdfDetailScreen({
-    super.key,
-    required this.pdfBook,
-  });
+  const PdfDetailScreen({super.key, required this.pdfBook});
 
   @override
   State<PdfDetailScreen> createState() => _PdfDetailScreenState();
@@ -49,9 +45,7 @@ class _PdfDetailScreenState extends State<PdfDetailScreen> {
       text: widget.pdfBook.publisher ?? '',
     );
 
-    _noteController = TextEditingController(
-      text: widget.pdfBook.note ?? '',
-    );
+    _noteController = TextEditingController(text: widget.pdfBook.note ?? '');
 
     _isFavorite = widget.pdfBook.isFavorite;
     _readingStatus = widget.pdfBook.readingStatus;
@@ -90,9 +84,9 @@ class _PdfDetailScreenState extends State<PdfDetailScreen> {
       clearNote: _noteController.text.trim().isEmpty,
     );
 
-    final success = await context
-        .read<PdfLibraryProvider>()
-        .updatePdf(updatedBook);
+    final success = await context.read<PdfLibraryProvider>().updatePdf(
+      updatedBook,
+    );
 
     if (!mounted) return;
 
@@ -116,7 +110,6 @@ class _PdfDetailScreenState extends State<PdfDetailScreen> {
     }
   }
 
-  
   void _openPdfReader() {
     final provider = context.read<PdfLibraryProvider>();
 
@@ -129,13 +122,10 @@ class _PdfDetailScreenState extends State<PdfDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PdfReaderScreen(
-          pdfBook: latestBook,
-        ),
+        builder: (context) => PdfReaderScreen(pdfBook: latestBook),
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -193,9 +183,7 @@ class _PdfDetailScreenState extends State<PdfDetailScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF477A65),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 13,
-                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 13),
                         ),
                       ),
                     ),
@@ -208,15 +196,18 @@ class _PdfDetailScreenState extends State<PdfDetailScreen> {
               // Informasi buku.
               const Text(
                 'Informasi Buku',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
 
               TextFormField(
                 controller: _authorController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Nama penulis tidak boleh kosong';
+                  }
+                  return null;
+                },
                 decoration: InputDecoration(
                   labelText: 'Nama Penulis',
                   hintText: 'Masukkan nama penulis',
@@ -233,6 +224,12 @@ class _PdfDetailScreenState extends State<PdfDetailScreen> {
 
               TextFormField(
                 controller: _publisherController,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Penerbit tidak boleh kosong';
+                  }
+                  return null;
+                },
                 decoration: InputDecoration(
                   labelText: 'Penerbit',
                   hintText: 'Masukkan nama penerbit',
@@ -250,10 +247,7 @@ class _PdfDetailScreenState extends State<PdfDetailScreen> {
               // Pengaturan membaca.
               const Text(
                 'Pengaturan Membaca',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
 
@@ -264,9 +258,7 @@ class _PdfDetailScreenState extends State<PdfDetailScreen> {
                 ),
                 child: SwitchListTile(
                   title: const Text('Buku Favorit'),
-                  subtitle: const Text(
-                    'Tambahkan PDF ke daftar favorit',
-                  ),
+                  subtitle: const Text('Tambahkan PDF ke daftar favorit'),
                   secondary: const Icon(
                     Icons.favorite_outline,
                     color: Color(0xFF477A65),
@@ -295,10 +287,7 @@ class _PdfDetailScreenState extends State<PdfDetailScreen> {
                   ),
                 ),
                 items: _readingStatuses.map((status) {
-                  return DropdownMenuItem(
-                    value: status,
-                    child: Text(status),
-                  );
+                  return DropdownMenuItem(value: status, child: Text(status));
                 }).toList(),
                 onChanged: (value) {
                   if (value != null) {
@@ -314,10 +303,7 @@ class _PdfDetailScreenState extends State<PdfDetailScreen> {
               // Rating buku.
               const Text(
                 'Rating Buku',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
 
@@ -377,10 +363,7 @@ class _PdfDetailScreenState extends State<PdfDetailScreen> {
               // Catatan pribadi.
               const Text(
                 'Catatan Pribadi',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
 
@@ -414,15 +397,11 @@ class _PdfDetailScreenState extends State<PdfDetailScreen> {
                           ),
                         )
                       : const Icon(Icons.save_outlined),
-                  label: Text(
-                    _isSaving ? 'Menyimpan...' : 'Simpan Perubahan',
-                  ),
+                  label: Text(_isSaving ? 'Menyimpan...' : 'Simpan Perubahan'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF477A65),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 15,
-                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
